@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const Blog = require('../models/Blog'); // Make sure this path matches your structure
+const BlogPost = require('../models/BlogPost'); 
 
 // Seed dummy posts
 router.get('/seed', async (req, res) => {
@@ -31,7 +31,7 @@ router.post('/', async (req, res) => {
   try {
     const { title, content, author, image } = req.body;
 
-    const newPost = new Blog({
+    const newPost = new BlogPost({
       title,
       content,
       author,
@@ -42,6 +42,56 @@ router.post('/', async (req, res) => {
     res.status(201).json(savedPost);
   } catch (err) {
     res.status(500).json({ message: 'Failed to create post', error: err.message });
+  }
+});
+
+// DELETE /api/posts/:id
+router.delete('/:id', async (req, res) => {
+  try {
+    const deletedPost = await BlogPost.findByIdAndDelete(req.params.id);
+    if (!deletedPost) {
+      return res.status(404).json({ message: 'Post not found' });
+    }
+    res.status(200).json({ message: 'Post deleted successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error while deleting post' });
+  }
+});
+
+
+// PUT /api/posts/:id
+router.put('/:id', async (req, res) => {
+  const { title, content } = req.body;
+
+  try {
+    const updatedPost = await BlogPost.findByIdAndUpdate(
+      req.params.id,
+      { title, content },
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedPost) {
+      return res.status(404).json({ message: 'Post not found' });
+    }
+
+    res.status(200).json(updatedPost);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error while updating post' });
+  }
+});
+
+
+// @route   GET /api/posts
+// @desc    Get all blog posts
+
+router.get('/', async (req, res) => {
+  try {
+    const posts = await BlogPost.find();
+    res.status(200).json(posts);
+  } catch (err) {
+    res.status(500).json({ error: 'Server error while fetching posts' });
   }
 });
 
