@@ -95,5 +95,18 @@ router.get('/', async (req, res) => {
   }
 });
 
+router.get('/:id', async (req, res) => {
+  try {
+    const post = await BlogPost.findById(req.params.id);
+    if (!post) {
+      return res.status(404).json({ message: 'Post not found' });
+    }
+    res.status(200).json(post);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error while fetching post' });
+  }
+});
+
 
 module.exports = router;
